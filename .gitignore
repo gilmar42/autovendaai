@@ -1,0 +1,38 @@
+# Secrets
+.env
+**/.env
+!.env.example
+
+# Node
+node_modules/
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Python
+.venv/
+venv/
+__pycache__/
+**/__pycache__/
+*.pyc
+
+# Build artifacts
+frontend/build/
+vendai-frontend/.next/
+vendai-frontend/out/
+coverage/
+
+# Logs and runtime artifacts
+*.log
+*.txt
+backend/output_backend.txt
+backend/last_backend.txt
+frontend/output_frontend.txt
+frontend/last_frontend.txt
+frontend/final_front_check.txt
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
