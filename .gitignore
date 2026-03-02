@@ -36,3 +36,6 @@ frontend/final_front_check.txt
 .DS_Store
 Thumbs.db
 .vscode/
+
+# Embedded repo backups
+vendai-frontend/.git_backup_embedded/
