@@ -1,7 +1,7 @@
 import logging
 import sys
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 class JSONFormatter(logging.Formatter):
@@ -14,7 +14,7 @@ class JSONFormatter(logging.Formatter):
             "CRITICAL": "CRÍTICO"
         }
         log_obj = {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "nivel": levels_pt.get(record.levelname, record.levelname),
             "mensagem": record.getMessage(),
             "modulo": record.module,

@@ -6,7 +6,12 @@ from app.middleware.security import SecurityHeadersMiddleware
 from app.middleware.rate_limit import RateLimitMiddleware
 from app.api.products import router as product_router
 from app.api.ai import router as ai_router
+from app.api.ai_settings import router as ai_settings_router
+from app.api.dashboard import router as dashboard_router
 from app.api.sales import router as sales_router
+from app.api.auth import router as auth_router
+from app.api.professional import router as professional_router
+from app.api.payments import router as payments_router
 from app.core.config import settings
 from app.core.logger import setup_logging, logger as vendai_logger
 
@@ -22,7 +27,8 @@ app.add_middleware(TenantMiddleware)
 app.add_middleware(
     CORSMiddleware,
     # More restrictive for prod hardening
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=[origin.strip()
+                   for origin in settings.ALLOWED_ORIGINS.split(",")],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -42,9 +48,20 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 app.include_router(
     product_router, prefix=f"{settings.API_V1_STR}/products", tags=["products"])
-app.include_router(ai_router, prefix=f"{settings.API_V1_STR}/ai", tags=["ai"])
+app.include_router(
+    ai_router, prefix=f"{settings.API_V1_STR}/ai", tags=["ai"])
+app.include_router(
+    ai_settings_router, prefix=f"{settings.API_V1_STR}/ai/settings", tags=["ai-settings"])
+app.include_router(
+    dashboard_router, prefix=f"{settings.API_V1_STR}/dashboard", tags=["dashboard"])
 app.include_router(
     sales_router, prefix=f"{settings.API_V1_STR}/sales", tags=["sales"])
+app.include_router(
+    auth_router, prefix=f"{settings.API_V1_STR}/auth", tags=["auth"])
+app.include_router(
+    professional_router, prefix=f"{settings.API_V1_STR}/professional", tags=["professional"])
+app.include_router(
+    payments_router, prefix=f"{settings.API_V1_STR}/payments", tags=["payments"])
 
 
 @app.get("/")
@@ -58,4 +75,6 @@ async def health_check():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    import os
+    reload_mode = os.getenv("ENVIRONMENT", "development") == "development"
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=reload_mode)

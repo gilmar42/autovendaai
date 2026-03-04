@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from 'react';
-import api from '@/services/api';
+import { api } from '@/lib/api';
 
 interface Product {
   id: string;
@@ -25,7 +25,7 @@ export default function Catalog() {
   const fetchProducts = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await api.get('products');
+      const res = await api.get('/products/');
       setProducts(res.data);
     } catch (err) {
       console.error("Erro ao buscar produtos:", err);
@@ -58,9 +58,9 @@ export default function Catalog() {
     e.preventDefault();
     try {
       if (editingProduct) {
-        await api.put(`products/${editingProduct.id}`, formData);
+        await api.put(`/products/${editingProduct.id}`, formData);
       } else {
-        await api.post('products', formData);
+        await api.post('/products/', formData);
       }
       setIsModalOpen(false);
       fetchProducts();
@@ -72,7 +72,7 @@ export default function Catalog() {
   const handleDelete = async (id: string) => {
     if (confirm("Deseja realmente excluir este produto?")) {
       try {
-        await api.delete(`products/${id}`);
+        await api.delete(`/products/${id}`);
         fetchProducts();
       } catch (err) {
         console.error("Erro ao excluir produto:", err);

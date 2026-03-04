@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from 'react';
-import api from '@/services/api';
+import { api } from '@/lib/api';
 
 interface Product {
   id: string;
@@ -15,7 +15,7 @@ export default function Inventory() {
   const fetchProducts = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await api.get('products');
+      const res = await api.get('/products/');
       setProducts(res.data);
     } catch (err) {
       console.error("Erro ao buscar estoque:", err);
@@ -33,9 +33,9 @@ export default function Inventory() {
     try {
       // No backend PUT completo, precisamos enviar o objeto todo. 
       // Buscamos o produto primeiro ou assumimos os outros campos
-      const prodRes = await api.get(`products/${id}`);
+      const prodRes = await api.get(`/products/${id}`);
       const updatedProd = { ...prodRes.data, stock: newStock };
-      await api.put(`products/${id}`, updatedProd);
+      await api.put(`/products/${id}`, updatedProd);
       
       // Update local state optimizing UX
       setProducts(prev => prev.map(p => p.id === id ? { ...p, stock: newStock } : p));

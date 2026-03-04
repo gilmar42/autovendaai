@@ -20,6 +20,8 @@ export const metadata: Metadata = {
 import Navbar from "@/components/Navbar";
 import AIChatFloating from "@/components/AIChatFloating";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { AuthProvider } from "@/context/AuthContext";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 export default function RootLayout({
   children,
@@ -27,13 +29,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-br">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased pt-24 text-foreground bg-background`}>
-        <ErrorBoundary>
-          <Navbar />
-          {children}
-          <AIChatFloating />
-        </ErrorBoundary>
+    <html lang="pt-br" suppressHydrationWarning>
+      <body suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable} antialiased pt-24 text-foreground bg-background`}>
+        <AuthProvider>
+          <ProtectedRoute>
+            <ErrorBoundary>
+              <Navbar />
+              {children}
+              <AIChatFloating />
+            </ErrorBoundary>
+          </ProtectedRoute>
+        </AuthProvider>
       </body>
     </html>
   );

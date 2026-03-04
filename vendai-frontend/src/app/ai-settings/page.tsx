@@ -1,6 +1,51 @@
 "use client";
 
+import { useState, useEffect } from "react";
+import { api } from "@/lib/api";
+
 export default function AISettings() {
+  const [behavior, setBehavior] = useState("Consultor Proativo (Foco em Conversão)");
+  const [persuasion, setPersuasion] = useState("50");
+  const [isSaving, setIsSaving] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await api.get("/ai/settings");
+        if (response.data) {
+          setBehavior(response.data.behavior);
+          setPersuasion(response.data.persuasion.toString());
+        }
+      } catch (error) {
+        console.error("Failed to fetch AI settings:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchSettings();
+  }, []);
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    setShowSuccess(false);
+    
+    try {
+      await api.post("/ai/settings", {
+        behavior,
+        persuasion: parseInt(persuasion)
+      });
+      
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 3000);
+    } catch (error) {
+      console.error("Failed to save AI settings:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const steps = [
     { title: "Construtor de Contexto", desc: "Coleta histórico e metadados do cliente", status: "Ativo" },
     { title: "Classificador de Intenção", desc: "Identifica se o cliente quer comprar, perguntar ou reclamar", status: "Ativo" },
@@ -42,17 +87,21 @@ export default function AISettings() {
         </div>
 
         <div className="space-y-6">
-          <div className="glass p-8 bg-indigo-500/5">
+          <div className="glass p-8 bg-indigo-500/5 relative">
             <h3 className="text-xl font-bold mb-6">Personalidade & Tom de Voz</h3>
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-bold text-gray-400 mb-2">
                   Comportamento Principal
                 </label>
-                <select className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-indigo-100 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%236366f1%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-size-[20px] bg-position-[right_1rem_center] bg-no-repeat">
-                  <option className="bg-[#1a1a2e] text-white">Consultor Proativo (Foco em Conversão)</option>
-                  <option className="bg-[#1a1a2e] text-white">Suporte Amigável (Foco em Retenção)</option>
-                  <option className="bg-[#1a1a2e] text-white">Especialista Técnico (Foco em Detalhes)</option>
+                <select 
+                  value={behavior}
+                  onChange={(e) => setBehavior(e.target.value)}
+                  className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-indigo-100 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%236366f1%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-size-[20px] bg-position-[right_1rem_center] bg-no-repeat"
+                >
+                  <option className="bg-[#1a1a2e] text-white" value="Consultor Proativo (Foco em Conversão)">Consultor Proativo (Foco em Conversão)</option>
+                  <option className="bg-[#1a1a2e] text-white" value="Suporte Amigável (Foco em Retenção)">Suporte Amigável (Foco em Retenção)</option>
+                  <option className="bg-[#1a1a2e] text-white" value="Especialista Técnico (Foco em Detalhes)">Especialista Técnico (Foco em Detalhes)</option>
                 </select>
               </div>
               <div>
@@ -62,7 +111,11 @@ export default function AISettings() {
                 <div className="relative pt-2">
                   <input
                     type="range"
-                    className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-indigo-500 hover:accent-indigo-400"
+                    min="0"
+                    max="100"
+                    value={persuasion}
+                    onChange={(e) => setPersuasion(e.target.value)}
+                    className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-indigo-500 hover:accent-indigo-400 transition-all"
                   />
                   <div className="flex justify-between text-[10px] text-gray-500 mt-3 font-bold uppercase tracking-wider">
                     <span>Informativo</span>
@@ -71,7 +124,25 @@ export default function AISettings() {
                   </div>
                 </div>
               </div>
-              <button className="btn-primary w-full py-4 mt-4">Salvar Configurações</button>
+              
+              <button 
+                onClick={handleSave}
+                disabled={isSaving || isLoading}
+                className="btn-primary w-full py-4 mt-4 relative overflow-hidden flex justify-center py-4 rounded-xl font-bold shadow-lg shadow-indigo-500/20 bg-indigo-600 hover:bg-indigo-700 text-white transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                {isLoading ? (
+                  <span>Carregando dados...</span>
+                ) : isSaving ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    <span>Salvando...</span>
+                  </div>
+                ) : showSuccess ? (
+                  <span className="text-green-300">✓ Configurações Salvas</span>
+                ) : (
+                  <span>Salvar Configurações</span>
+                )}
+              </button>
             </div>
           </div>
 

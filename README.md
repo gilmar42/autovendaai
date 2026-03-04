@@ -22,6 +22,7 @@ Sistema de vendas automáticas moderno.
 ### Backend (Produção)
 1. Instale dependências: `npm install`
 2. Configure o arquivo `.env` com dados seguros.
+	- Inclua `AI_MODEL_URL` para a rota `/api/ai/external-model` (ex.: `http://127.0.0.1:8000/predict`).
 3. Inicie em produção com [pm2](https://pm2.keymetrics.io/):
 	- Instale globalmente: `npm install -g pm2`
 	- Execute: `pm2 start index.js --name autovenda-backend`

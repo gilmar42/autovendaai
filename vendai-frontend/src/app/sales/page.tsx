@@ -1,13 +1,46 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { api } from '@/lib/api';
+
+interface Sale {
+  _id: string;
+  product_id: string;
+  quantity: number;
+  total_price: number;
+  date: string;
+}
 
 export default function SalesTerminal() {
+  const [sales, setSales] = useState<Sale[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Cart for manual mockup
   const [cart] = useState([
     { id: 1, name: "Consultoria AI Express", price: 299.00, qty: 1 },
     { id: 2, name: "Planilha de Gestão Pro", price: 49.90, qty: 2 },
   ]);
 
   const total = cart.reduce((acc, item) => acc + item.price * item.qty, 0);
+
+  useEffect(() => {
+    const fetchSales = async () => {
+      try {
+        const response = await api.get('/sales/');
+        if (response.data) {
+          // Sort sales by date descending
+          const sortedSales = response.data.sort((a: Sale, b: Sale) => 
+            new Date(b.date).getTime() - new Date(a.date).getTime()
+          );
+          setSales(sortedSales);
+        }
+      } catch (error) {
+        console.error("Failed to fetch sales history:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchSales();
+  }, []);
 
   return (
     <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-10">
@@ -17,26 +50,35 @@ export default function SalesTerminal() {
           <p className="text-gray-400 font-medium">Histórico de transações e vendas assistidas</p>
         </div>
 
-        <div className="glass p-8">
-          <h3 className="text-xl font-bold mb-6">Últimas Transações</h3>
-          <div className="space-y-4">
-            {[1, 2, 3].map((_, i) => (
-              <div key={i} className="flex justify-between items-center p-4 bg-white/5 rounded-xl border border-white/5 hover:border-indigo-500/30 transition-all cursor-pointer">
-                <div className="flex gap-4 items-center">
-                  <div className="w-10 h-10 rounded-full bg-linear-to-br from-indigo-500 to-purple-500 flex items-center justify-center font-bold">
-                    #{1024 + i}
+        <div className="glass p-8 relative overflow-hidden">
+          {isLoading && <div className="absolute inset-0 bg-white/5 animate-pulse z-0"></div>}
+          <h3 className="text-xl font-bold mb-6 relative z-10">Últimas Transações</h3>
+          <div className="space-y-4 relative z-10">
+            {sales.length > 0 ? (
+              sales.map((sale) => (
+                <div key={sale._id} className="flex justify-between items-center p-4 bg-white/5 rounded-xl border border-white/5 hover:border-indigo-500/30 transition-all cursor-pointer">
+                  <div className="flex gap-4 items-center">
+                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-indigo-500 to-purple-500 flex items-center justify-center font-bold text-xs">
+                      #{sale._id.slice(-4)}
+                    </div>
+                    <div>
+                      <p className="font-bold text-lg">Venda AutovendaAI</p>
+                      <p className="text-sm text-gray-500">
+                        {new Date(sale.date).toLocaleString("pt-BR", {
+                          day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit"
+                        })} • {sale.quantity} itens
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-bold text-lg">Gilmar Dutra</p>
-                    <p className="text-sm text-gray-500">Há {i * 15 + 10} minutos • 2 itens</p>
+                  <div className="text-right">
+                    <p className="font-black text-xl text-indigo-300">R$ {sale.total_price.toFixed(2).replace(".", ",")}</p>
+                    <p className="text-xs font-bold text-green-400">Pago</p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="font-black text-xl text-indigo-300">R$ { (348.90 + i * 10).toFixed(2) }</p>
-                  <p className="text-xs font-bold text-green-400">Pago</p>
-                </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="text-sm text-gray-500 text-center py-4">Nenhuma transação registrada.</p>
+            )}
           </div>
         </div>
       </div>

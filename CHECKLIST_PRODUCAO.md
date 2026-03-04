@@ -1,7 +1,7 @@
 # Checklist de Produção
 
 1. **Variáveis de ambiente**
-   - Configure .env com MONGO_URI, JWT_SECRET, PORT, tokens de APIs externas.
+   - Configure .env com MONGO_URI, JWT_SECRET, PORT, AI_MODEL_URL e tokens de APIs externas.
 
 2. **Build do frontend**
    - Execute: `npm run build` na pasta frontend.

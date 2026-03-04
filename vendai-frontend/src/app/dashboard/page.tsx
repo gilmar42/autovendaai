@@ -1,12 +1,39 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { api } from "@/lib/api";
+
+type Stat = { label: string; value: string; trend: string };
+type Activity = { id: string; message: string; date: string; amount: number };
+
 export default function Dashboard() {
-  const stats = [
-    { label: "Vendas Totais", value: "R$ 45.280", trend: "+12%" },
-    { label: "Conversão IA", value: "24.5%", trend: "+5%" },
-    { label: "Leads Ativos", value: "1,240", trend: "+18%" },
-    { label: "Economia (Horas)", value: "180h", trend: "+25%" },
-  ];
+  const [stats, setStats] = useState<Stat[]>([
+    { label: "Vendas Totais", value: "R$ 0,00", trend: "..." },
+    { label: "Conversão IA", value: "0%", trend: "..." },
+    { label: "Leads Ativos", value: "0", trend: "..." },
+    { label: "Economia (Horas)", value: "0h", trend: "..." },
+  ]);
+  
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const response = await api.get("/dashboard/stats");
+        if (response.data) {
+          setStats(response.data.stats);
+          setActivities(response.data.activities);
+        }
+      } catch (error) {
+        console.error("Failed to fetch dashboard stats", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchDashboardData();
+  }, []);
 
   return (
     <div className="max-w-7xl mx-auto px-6">
@@ -22,7 +49,8 @@ export default function Dashboard() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
         {stats.map((stat, i) => (
-          <div key={i} className="glass p-6 hover:border-indigo-500/50 transition-all cursor-pointer group">
+          <div key={i} className="glass p-6 hover:border-indigo-500/50 transition-all cursor-pointer group relative overflow-hidden">
+            {isLoading && <div className="absolute inset-0 bg-white/5 animate-pulse"></div>}
             <p className="text-gray-400 text-sm mb-1">{stat.label}</p>
             <div className="flex justify-between items-end">
               <h2 className="text-3xl font-black">{stat.value}</h2>
@@ -38,21 +66,28 @@ export default function Dashboard() {
         <div className="lg:col-span-2 glass p-8 min-h-[400px]">
           <h3 className="text-xl font-bold mb-6">Performance de Vendas (IA)</h3>
           <div className="h-64 w-full bg-indigo-500/5 rounded-xl border border-dashed border-indigo-500/20 flex items-center justify-center text-gray-500">
-            [O gráfico de conversão aparecerá aqui]
+            [O gráfico dinâmico será implementado aqui]
           </div>
         </div>
-        <div className="glass p-8">
-          <h3 className="text-xl font-bold mb-6">Atividades da IA</h3>
+        <div className="glass p-8 bg-indigo-500/5 relative overflow-hidden">
+          {isLoading && <div className="absolute inset-0 bg-white/5 animate-pulse"></div>}
+          <h3 className="text-xl font-bold mb-6">Atividades Recentes</h3>
           <div className="space-y-6">
-            {[1, 2, 3, 4].map((_, i) => (
-              <div key={i} className="flex gap-4 items-center">
-                <div className="w-2 h-2 rounded-full bg-indigo-400 shadow-lg shadow-indigo-400/50"></div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">Nova venda gerada pelo Agente #01</p>
-                  <p className="text-xs text-gray-500">Há 5 minutos • R$ 240,00</p>
+            {activities.length > 0 ? (
+              activities.map((act) => (
+                <div key={act.id} className="flex gap-4 items-center">
+                  <div className="w-2 h-2 rounded-full bg-indigo-400 shadow-lg shadow-indigo-400/50"></div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">{act.message}</p>
+                    <p className="text-xs text-gray-500">
+                      {new Date(act.date).toLocaleDateString("pt-BR", { hour: "2-digit", minute: "2-digit" })} • R$ {act.amount.toFixed(2).replace(".", ",")}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="text-sm text-gray-500 text-center mt-10">Nenhuma atividade recente.</p>
+            )}
           </div>
         </div>
       </div>

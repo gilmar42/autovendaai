@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from 'react';
-import api from '@/services/api';
+import { api } from '@/lib/api';
 
 export default function AIChatFloating() {
   const [isOpen, setIsOpen] = useState(false);
@@ -10,7 +10,7 @@ export default function AIChatFloating() {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handleToggle = () => setIsOpen(true);
+    const handleToggle = () => setIsOpen((prev) => !prev);
     window.addEventListener('toggle-ai-chat', handleToggle);
     return () => window.removeEventListener('toggle-ai-chat', handleToggle);
   }, []);
@@ -31,7 +31,7 @@ export default function AIChatFloating() {
     setLoading(true);
 
     try {
-      const res = await api.post('ai/chat', {
+      const res = await api.post('/ai/chat', {
         message: message,
         history: history
       });
@@ -44,7 +44,7 @@ export default function AIChatFloating() {
   };
 
   return (
-    <div className="fixed bottom-8 right-8 z-100">
+    <div className="fixed bottom-8 right-8 z-[100]">
       {!isOpen && (
         <button 
           onClick={() => setIsOpen(true)}
@@ -55,7 +55,7 @@ export default function AIChatFloating() {
       )}
 
       {isOpen && (
-        <div className="glass w-96 h-125 flex flex-col overflow-hidden shadow-2xl border-indigo-500/50 bg-[#0a0a0c]/90 backdrop-blur-2xl animate-in fade-in slide-in-from-bottom-6 duration-300">
+        <div className="glass w-96 h-[500px] flex flex-col overflow-hidden shadow-2xl border-indigo-500/50 bg-[#0a0a0c]/90 backdrop-blur-2xl animate-in fade-in slide-in-from-bottom-6 duration-300">
           <div className="px-6 py-4 bg-white/5 flex justify-between items-center border-b border-white/10">
             <div className="flex items-center gap-3">
               <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
